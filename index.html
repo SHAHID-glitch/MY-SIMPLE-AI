@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini AI Assistant - 3D Experience</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .notice {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            border-left: 5px solid #fdcb6e;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+
+        .notice h2 {
+            color: #d63031;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .notice p {
+            color: #2d3436;
+            line-height: 1.6;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .info-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .info-box li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .setup-steps {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .setup-steps h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .setup-steps ol {
+            padding-left: 20px;
+        }
+
+        .setup-steps li {
+            margin: 10px 0;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .setup-steps code {
+            background: #e9ecef;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #d63031;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 184, 148, 0.4);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .logo {
+                font-size: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🧠✨</div>
+            <h1>Gemini AI Assistant</h1>
+            <p class="subtitle">Beautiful 3D AI Chat Application powered by Google Gemini 2.5 Flash</p>
+        </div>
+
+        <div class="notice">
+            <h2>⚠️ Important Notice About GitHub Pages Deployment</h2>
+            <p>This is a <strong>Flask-based backend application</strong> that requires a server to run. GitHub Pages only serves static HTML files and <strong>cannot run Python backend code</strong>. The AI chat functionality will not work when deployed to GitHub Pages.</p>
+        </div>
+
+        <div class="info-box">
+            <h3>✨ Features of This Application</h3>
+            <ul>
+                <li>🎨 3D Animated UI with glassmorphism design</li>
+                <li>🤖 Powered by Google Gemini 2.5 Flash AI</li>
+                <li>💬 Real-time conversation with AI</li>
+                <li>📱 Fully responsive design</li>
+                <li>🎭 Beautiful message avatars and animations</li>
+                <li>⚡ Session-based chat history</li>
+            </ul>
+        </div>
+
+        <div class="setup-steps">
+            <h3>🚀 How to Run This Application Locally</h3>
+            <ol>
+                <li>Clone this repository: <code>git clone https://github.com/SHAHID-glitch/MY-SIMPLE-AI.git</code></li>
+                <li>Navigate to the directory: <code>cd MY-SIMPLE-AI</code></li>
+                <li>Install dependencies: <code>pip install -r requirements.txt</code></li>
+                <li>Create a <code>.env</code> file and add your Google Gemini API key:
+                    <br><code>GOOGLE_API_KEY=your_api_key_here</code>
+                </li>
+                <li>Run the Flask server: <code>python Backend.py</code></li>
+                <li>Open your browser and visit: <code>http://localhost:5000</code></li>
+            </ol>
+        </div>
+
+        <div class="info-box">
+            <h3>☁️ Recommended Deployment Platforms</h3>
+            <ul>
+                <li>🚂 Railway.app - Free tier with easy Python deployment</li>
+                <li>🎨 Render.com - Free web services for Flask apps</li>
+                <li>⚡ Vercel - With Python runtime support</li>
+                <li>🔥 Heroku - Classic platform for web apps</li>
+                <li>🐳 Google Cloud Run - Containerized deployments</li>
+            </ul>
+        </div>
+
+        <div class="btn-container">
+            <a href="https://github.com/SHAHID-glitch/MY-SIMPLE-AI" class="btn btn-primary" target="_blank">
+                📦 View on GitHub
+            </a>
+            <a href="https://github.com/SHAHID-glitch/MY-SIMPLE-AI#readme" class="btn btn-secondary" target="_blank">
+                📖 Read Documentation
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>Made with ❤️ by SHAHID</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                For questions or support, please open an issue on GitHub
+            </p>
+        </div>
+    </div>
+</body>
+</html>
