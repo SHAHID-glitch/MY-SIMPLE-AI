@@ -138,10 +138,7 @@ def clear_conversation():
         logger.error(f"Error clearing conversation: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-# Vercel serverless function handler
-def handler(request):
-    with app.request_context(request.environ):
-        return app.full_dispatch_request()
-
+# Export app for Vercel
+# Vercel will automatically use this as the handler
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
