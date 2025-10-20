@@ -39,7 +39,25 @@ HISTORY_LIMIT = 12
 @app.route('/')
 def home():
     try:
-        return render_template('index.html')
+        # Read the template file directly and replace Flask template tags
+        template_path = BASE_DIR / 'templates' / 'index.html'
+        if not template_path.exists():
+            return jsonify({'error': 'Template not found', 'path': str(template_path)}), 500
+        
+        with open(template_path, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+        
+        # Replace Flask template tags with static paths
+        html_content = html_content.replace(
+            "{{ url_for('static', filename='gemini-style.css') }}", 
+            "/static/gemini-style.css"
+        )
+        html_content = html_content.replace(
+            "{{ url_for('static', filename='gemini-app.js') }}", 
+            "/static/gemini-app.js"
+        )
+        
+        return html_content, 200, {'Content-Type': 'text/html'}
     except Exception as e:
         logger.error(f"Error rendering template: {e}")
         return jsonify({'error': 'Template error', 'details': str(e)}), 500
