@@ -36,31 +36,117 @@ else:
 conversation_store = {}
 HISTORY_LIMIT = 12
 
+# Embedded HTML template (since templates folder may not deploy to Vercel)
+HTML_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini AI Assistant - 3D Experience</title>
+    <link rel="stylesheet" href="/static/gemini-style.css">
+</head>
+<body>
+    <div class="background-3d">
+        <div class="sphere sphere-1"></div>
+        <div class="sphere sphere-2"></div>
+        <div class="sphere sphere-3"></div>
+        <div class="particles" id="particles"></div>
+    </div>
+    <div class="container">
+        <header class="header-3d">
+            <div class="logo-container">
+                <div class="logo-3d">
+                    <div class="logo-face front">🧠</div>
+                    <div class="logo-face back">✨</div>
+                </div>
+            </div>
+            <h1 class="title-3d">
+                <span class="title-letter" style="--i:0">G</span>
+                <span class="title-letter" style="--i:1">e</span>
+                <span class="title-letter" style="--i:2">m</span>
+                <span class="title-letter" style="--i:3">i</span>
+                <span class="title-letter" style="--i:4">n</span>
+                <span class="title-letter" style="--i:5">i</span>
+                <span class="title-letter" style="--i:6"> </span>
+                <span class="title-letter" style="--i:7">A</span>
+                <span class="title-letter" style="--i:8">I</span>
+            </h1>
+            <p class="subtitle-3d">Powered by Google Gemini 2.0 Flash</p>
+            <div class="api-status-3d" id="api-status">
+                <span class="status-dot"></span>
+                <span class="status-text">Checking API...</span>
+            </div>
+        </header>
+        <div class="chat-container-3d">
+            <div id="chat-messages" class="chat-messages-3d">
+                <div class="message ai-message-3d">
+                    <div class="message-avatar">
+                        <div class="avatar-3d ai-avatar">🤖</div>
+                    </div>
+                    <div class="message-content-3d">
+                        <div class="message-text">Hello! I'm your AI assistant powered by Google Gemini. How can I help you today? 🚀</div>
+                        <div class="message-time" id="current-time"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="input-area-3d">
+                <div class="input-container-3d">
+                    <div class="input-glow"></div>
+                    <textarea id="user-input" placeholder="Ask me anything... ✨" autocomplete="off" rows="1"></textarea>
+                    <button id="send-btn" class="send-button-3d" aria-label="Send message">
+                        <span class="button-text">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                            </svg>
+                        </span>
+                        <span class="button-loader" style="display: none;">
+                            <div class="spinner-3d"></div>
+                        </span>
+                    </button>
+                </div>
+                <div class="input-hint-3d">
+                    <span>💡 Press <kbd>Enter</kbd> to send</span>
+                    <span>•</span>
+                    <span><kbd>Shift</kbd> + <kbd>Enter</kbd> for new line</span>
+                </div>
+            </div>
+        </div>
+        <footer class="footer-3d">
+            <div class="footer-content-3d">
+                <div class="footer-item">
+                    <span class="footer-icon">🤖</span>
+                    <span>Gemini 2.0 Flash</span>
+                </div>
+                <div class="footer-item">
+                    <span class="footer-icon">💬</span>
+                    <span id="message-count">0 messages</span>
+                </div>
+                <div class="footer-item">
+                    <span class="footer-icon">⚡</span>
+                    <span>Ultra Fast</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <script src="/static/gemini-app.js"></script>
+    <script>
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 20 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+    </script>
+</body>
+</html>"""
+
 @app.route('/')
 def home():
-    try:
-        # Read the template file directly and replace Flask template tags
-        template_path = BASE_DIR / 'templates' / 'index.html'
-        if not template_path.exists():
-            return jsonify({'error': 'Template not found', 'path': str(template_path)}), 500
-        
-        with open(template_path, 'r', encoding='utf-8') as f:
-            html_content = f.read()
-        
-        # Replace Flask template tags with static paths
-        html_content = html_content.replace(
-            "{{ url_for('static', filename='gemini-style.css') }}", 
-            "/static/gemini-style.css"
-        )
-        html_content = html_content.replace(
-            "{{ url_for('static', filename='gemini-app.js') }}", 
-            "/static/gemini-app.js"
-        )
-        
-        return html_content, 200, {'Content-Type': 'text/html'}
-    except Exception as e:
-        logger.error(f"Error rendering template: {e}")
-        return jsonify({'error': 'Template error', 'details': str(e)}), 500
+    return HTML_TEMPLATE, 200, {'Content-Type': 'text/html'}
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
