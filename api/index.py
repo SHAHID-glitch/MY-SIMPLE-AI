@@ -13,9 +13,13 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
+# Use absolute path for Vercel serverless environment
+import pathlib
+BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
+
 app = Flask(__name__, 
-            template_folder='../templates',
-            static_folder='../static')
+            template_folder=str(BASE_DIR / 'templates'),
+            static_folder=str(BASE_DIR / 'static'))
 CORS(app)
 
 # Configure Gemini
