@@ -2,25 +2,156 @@ from flask import Flask, request, jsonify, render_template, make_response
 from flask_cors import CORS
 import google.generativeai as genai
 import os
-from dotenv import load_dotenv
 import logging
 import time
 import uuid
+from pathlib import Path
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-load_dotenv()
+# Get base directory
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Use absolute path for Vercel serverless environment
-import pathlib
-BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
-
+# Initialize Flask app
 app = Flask(__name__, 
             template_folder=str(BASE_DIR / 'templates'),
             static_folder=str(BASE_DIR / 'static'))
 CORS(app)
+
+# Configure Gemini - Vercel provides environment variables
+GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
+
+if GOOGLE_API_KEY:
+    genai.configure(api_key=GOOGLE_API_KEY)
+    logger.info("Gemini API configured successfully")
+else:
+    logger.warning("Google API key not found in environment variables")
+
+# In-memory conversation store
+conversation_store = {}
+HISTORY_LIMIT = 12
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    """Handle chat requests"""
+    start_time = time.time()
+
+    try:
+        data = request.json
+        user_message = data.get('message', '').strip()
+
+        if not user_message:
+            return jsonify({'success': False, 'error': 'No message provided'}), 400
+
+        if not GOOGLE_API_KEY:
+            return jsonify({'success': False, 'error': 'Gemini API key not configured'}), 500
+
+        # Session handling
+        session_id = request.cookies.get('session_id')
+        if not session_id:
+            session_id = str(uuid.uuid4())
+
+        history = conversation_store.get(session_id, [])
+        history.append({'role': 'user', 'content': user_message})
+
+        if len(history) > HISTORY_LIMIT * 2:
+            history = history[-(HISTORY_LIMIT * 2):]
+
+        # Get AI response
+        ai_response = get_gemini_response(history)
+
+        history.append({'role': 'assistant', 'content': ai_response})
+        conversation_store[session_id] = history
+
+        response_time = time.time() - start_time
+        logger.info(f"Chat processed in {response_time:.2f}s")
+
+        resp = make_response(jsonify({
+            'success': True, 
+            'response': ai_response, 
+            'processing_time': f"{response_time:.2f}s"
+        }))
+        resp.set_cookie('session_id', session_id, httponly=True, samesite='Lax')
+        return resp
+
+    except Exception as e:
+        logger.exception("Error in chat endpoint")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+def get_gemini_response(history):
+    """Get response from Gemini"""
+    try:
+        if not GOOGLE_API_KEY:
+            return "⚠️ API key not configured"
+
+        system_instruction = "You are a helpful AI assistant. Answer questions concisely and clearly."
+        
+        convo_text = system_instruction + "\n\nConversation:\n"
+        for turn in history:
+            role = turn.get('role')
+            content = turn.get('content', '')
+            if role == 'user':
+                convo_text += f"User: {content}\n"
+            else:
+                convo_text += f"Assistant: {content}\n"
+        
+        convo_text += "Assistant:"
+
+        model = genai.GenerativeModel('models/gemini-2.0-flash-exp')
+        
+        response = model.generate_content(
+            convo_text,
+            generation_config=genai.types.GenerationConfig(
+                temperature=0.9,
+                top_p=0.95,
+                top_k=64,
+                max_output_tokens=2048,
+            )
+        )
+
+        return response.text.strip()
+
+    except Exception as e:
+        logger.exception("Gemini API error")
+        return f"⚠️ Error: {str(e)}"
+
+@app.route('/api/status', methods=['GET'])
+def api_status():
+    """Check API status"""
+    try:
+        return jsonify({
+            'success': True,
+            'gemini_configured': bool(GOOGLE_API_KEY),
+            'service': 'Google Gemini 2.0 Flash',
+            'timestamp': time.time()
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/reset', methods=['POST'])
+def reset_conversation():
+    """Reset conversation"""
+    try:
+        session_id = request.cookies.get('session_id')
+        if session_id and session_id in conversation_store:
+            del conversation_store[session_id]
+
+        resp = make_response(jsonify({'success': True, 'message': 'Conversation reset'}))
+        resp.set_cookie('session_id', '', expires=0)
+        return resp
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# Export app for Vercel
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)
+
 
 # Configure Gemini
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY') or os.environ.get('GOOGLE_API_KEY')
