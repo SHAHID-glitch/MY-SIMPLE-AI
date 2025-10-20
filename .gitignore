@@ -76,3 +76,4 @@ desktop.ini
 create_css.py
 test_models.py
 test_chat.py
+.vercel
