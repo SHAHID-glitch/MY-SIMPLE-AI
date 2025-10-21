@@ -26,9 +26,6 @@ SIMPLE AI/
 
 ## 🔑 API Configuration
 
-### Your Google Gemini API Key:
-```
-GOOGLE_API_KEY="AIzaSyABYiYW5RgtP2NV2LlqAu9s8If5jVM4xTc"
 ```
 
 ✅ **Status**: Configured and Working!
