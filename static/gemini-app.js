@@ -40,7 +40,7 @@ class GeminiChat {
             const data = await response.json();
             
             const statusText = this.apiStatus.querySelector('.status-text');
-            if (data.success && data.gemini_configured) {
+            if (data.success && data.groq_configured) {
                 this.apiStatus.classList.add('connected');
                 if (statusText) statusText.textContent = 'API Connected';
             } else {

@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template, make_response
 from flask_cors import CORS
-import google.generativeai as genai
+from groq import Groq
 import os
 from dotenv import load_dotenv
 import logging
@@ -16,14 +16,14 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Configure Gemini
-GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+# Configure Groq
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 
-if GOOGLE_API_KEY:
-    genai.configure(api_key=GOOGLE_API_KEY)
-    logger.info("Gemini API configured successfully")
+if GROQ_API_KEY:
+    client = Groq(api_key=GROQ_API_KEY)
+    logger.info("Groq API configured successfully")
 else:
-    logger.warning("Google API key not found in environment variables")
+    logger.warning("Groq API key not found in environment variables")
 
 # In-memory conversation store (simple, non-persistent)
 conversation_store = {}
@@ -46,8 +46,8 @@ def chat():
         if not user_message:
             return jsonify({'success': False, 'error': 'No message provided'}), 400
 
-        if not GOOGLE_API_KEY:
-            return jsonify({'success': False, 'error': 'Gemini API key not configured. Please check your .env file'}), 500
+        if not GROQ_API_KEY:
+            return jsonify({'success': False, 'error': 'Groq API key not configured. Please check your .env file'}), 500
 
         # Session handling (simple cookie-based)
         session_id = request.cookies.get('session_id')
@@ -82,50 +82,35 @@ def chat():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 def get_gemini_response(history):
-    """Get response from Google Gemini using recent conversation history.
+    """Get response from Groq using recent conversation history.
 
     history: list of {'role': 'user'|'assistant', 'content': str}
     Returns assistant reply (string).
     """
     try:
-        if not GOOGLE_API_KEY:
+        if not GROQ_API_KEY:
             return "⚠️ API key not configured. Please check your .env file."
 
-        system_instruction = (
-            "You are a helpful, friendly, and knowledgeable AI assistant."
-            " Answer the user's questions concisely and clearly. Provide examples when helpful."
-        )
-
-        # Build a single prompt from system instruction + recent history
-        convo_text = system_instruction + "\n\nConversation:\n"
+        # Convert history to Groq format
+        messages = []
         for turn in history:
             role = turn.get('role')
             content = turn.get('content', '')
-            if role == 'user':
-                convo_text += f"User: {content}\n"
-            else:
-                convo_text += f"Assistant: {content}\n"
+            messages.append({'role': role, 'content': content})
 
-        convo_text += "Assistant:"
-
-        # Use the latest Gemini 2.5 Flash model (WITH models/ prefix - this is correct!)
-        model = genai.GenerativeModel('models/gemini-2.5-flash')
-        
-        response = model.generate_content(
-            convo_text,
-            generation_config=genai.types.GenerationConfig(
-                temperature=0.9,
-                top_p=0.95,
-                top_k=64,
-                max_output_tokens=2048,
-            )
+        # Use Groq's latest available model
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            temperature=0.9,
+            max_tokens=2048,
         )
 
-        return response.text.strip()
+        return response.choices[0].message.content.strip()
 
     except Exception as e:
-        logger.exception("Gemini API error")
-        return f"⚠️ Gemini API error: {str(e)}"
+        logger.exception("Groq API error")
+        return f"⚠️ Groq API error: {str(e)}"
 
 
 @app.route('/api/reset', methods=['POST'])
@@ -149,21 +134,24 @@ def api_status():
     try:
         status_info = {
             'success': True,
-            'gemini_configured': bool(GOOGLE_API_KEY),
-            'service': 'Google Gemini 2.5 Flash',
+            'groq_configured': bool(GROQ_API_KEY),
+            'service': 'Groq Mixtral 8x7b',
             'timestamp': time.time()
         }
         
-        # Test Gemini connection if API key is configured
-        if GOOGLE_API_KEY:
+        # Test Groq connection if API key is configured
+        if GROQ_API_KEY:
             try:
-                model = genai.GenerativeModel('models/gemini-2.5-flash')
-                test_response = model.generate_content("Hello")
-                status_info['gemini_working'] = True
+                response = client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=[{"role": "user", "content": "Hello"}],
+                    max_tokens=50
+                )
+                status_info['groq_working'] = True
                 status_info['test_response'] = "Connection successful"
             except Exception as e:
-                status_info['gemini_working'] = False
-                status_info['gemini_error'] = str(e)
+                status_info['groq_working'] = False
+                status_info['groq_error'] = str(e)
         
         return jsonify(status_info)
     
@@ -175,9 +163,9 @@ def api_status():
 
 @app.route('/api/models', methods=['GET'])
 def list_models():
-    """List available Gemini models"""
+    """List available Groq models"""
     try:
-        if not GOOGLE_API_KEY:
+        if not GROQ_API_KEY:
             return jsonify({
                 'success': False,
                 'error': 'API key not configured'
@@ -185,8 +173,13 @@ def list_models():
         
         models = [
             {
-                'name': 'gemini-pro',
-                'description': 'Google Gemini Pro - Best for text generation',
+                'name': 'llama-3.3-70b-versatile',
+                'description': 'Meta Llama 3.3 70B - High-quality reasoning',
+                'max_tokens': 4096
+            },
+            {
+                'name': 'mixtral-8x7b-32768',
+                'description': 'Mixtral 8x7B - Balanced performance',
                 'max_tokens': 32768
             }
         ]
