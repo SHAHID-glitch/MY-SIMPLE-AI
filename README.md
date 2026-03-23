@@ -1,3 +1,12 @@
+---
+title: MY SIMPLE AI
+emoji: 🤖
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+pinned: false
+---
+
 # Gemini AI Assistant - 3D Experience 🧠✨
 
 A beautiful, modern AI chat application powered by Google Gemini 2.5 Flash with stunning 3D UI effects, glassmorphism design, and smooth animations.
