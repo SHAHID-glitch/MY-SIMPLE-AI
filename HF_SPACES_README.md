@@ -1,6 +1,6 @@
 # 🧠 Gemini AI Assistant on Hugging Face Spaces
 
-A stunning AI chat application with 3D UI effects powered by **Google Gemini 2.5 Flash**
+A stunning AI chat application with 3D UI effects powered by **Groq Llama 3.3 70B**
 
 ![Demo](https://img.shields.io/badge/Status-Live-green)
 ![Python](https://img.shields.io/badge/Python-3.8+-blue)
@@ -18,15 +18,15 @@ A stunning AI chat application with 3D UI effects powered by **Google Gemini 2.5
 
 ### Required: Set Hugging Face Secrets
 
-Add your **Google Gemini API key** to Hugging Face Spaces secrets:
+Add your **Groq API key** to Hugging Face Spaces secrets:
 
 1. Go to your Space settings
 2. Click **"Repository secrets"**
 3. Add:
-   - **Name**: `GEMINI_API_KEY`
-   - **Value**: Your Google Gemini API key
+   - **Name**: `GROQ_API_KEY`
+   - **Value**: Your Groq API key
    
-   Get your free API key: https://makersuite.google.com/app/apikey
+   Get your API key: https://console.groq.com/keys
 
 ## 📁 Deployment Structure
 
@@ -47,7 +47,7 @@ Once deployed on Hugging Face Spaces, your app will be available at:
 
 1. **Frontend**: React SPA served from `static/dist`
 2. **Backend**: Flask API at `/api/chat`
-3. **AI Engine**: Google Gemini 2.5 Flash
+3. **AI Engine**: Groq Llama 3.3 70B
 
 ## 🔗 Links
 

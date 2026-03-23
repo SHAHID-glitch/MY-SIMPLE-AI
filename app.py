@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Hugging Face Spaces deployment for Gemini AI Assistant
+Hugging Face Spaces deployment for Groq AI Assistant
 Serves both Flask API and React frontend
 """
 
@@ -8,7 +8,7 @@ import os
 import json
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS
-import google.generativeai as genai
+from groq import Groq
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -21,10 +21,9 @@ app = Flask(__name__,
 )
 CORS(app)
 
-# Configure Gemini API
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+# Configure Groq API
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
 # Store conversation history
 conversations = {}
@@ -45,8 +44,8 @@ def chat():
         if not user_message:
             return jsonify({'error': 'No message provided'}), 400
         
-        if not GEMINI_API_KEY:
-            return jsonify({'error': 'Gemini API key not configured'}), 500
+        if not GROQ_API_KEY:
+            return jsonify({'error': 'Groq API key not configured'}), 500
         
         # Initialize conversation if needed
         if user_id not in conversations:
@@ -58,11 +57,16 @@ def chat():
             'content': user_message
         })
         
-        # Generate response using Gemini
-        model = genai.GenerativeModel('gemini-2.5-flash')
-        response = model.generate_content(user_message)
-        
-        ai_message = response.text if response else "Sorry, I couldn't generate a response."
+        # Generate response using Groq
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "user", "content": user_message}
+            ],
+            temperature=0.7,
+            max_tokens=1024,
+        )
+        ai_message = response.choices[0].message.content.strip()
         
         # Add AI message to history
         conversations[user_id].append({
@@ -87,8 +91,8 @@ def status():
     """Check API status and configuration"""
     return jsonify({
         'status': 'running',
-        'gemini_configured': bool(GEMINI_API_KEY),
-        'model': 'gemini-2.5-flash'
+        'groq_configured': bool(GROQ_API_KEY),
+        'model': 'llama-3.3-70b-versatile'
     })
 
 # Serve other static files
